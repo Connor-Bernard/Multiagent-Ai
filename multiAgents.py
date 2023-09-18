@@ -153,27 +153,23 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         
-        def minimax(gameState, currDepth):
-            if gameState.isWin() or gameState.isLose():
+        def minimax(gameState, agentIndex, currDepth):
+            if gameState.isWin() or gameState.isLose() or currDepth == 0:
                 return self.evaluationFunction(gameState)
-            if currDepth == 0:
-                for i in range(gameState.getNumAgents()):
-                    if i == 0:
-                        return max([self.evaluationFunction(gameState.generateSuccessor(i, action)) for action in gameState.getLegalActions(i)])
-                    else:
-                        return min([self.evaluationFunction(gameState.generateSuccessor(i, action)) for action in gameState.getLegalActions(i)])
+            moves = gameState.getLegalActions(agentIndex)
+            successorStates = [gameState.generateSuccessor(agentIndex, move) for move in moves]
+            if agentIndex == 0:
+                return max([minimax(successorState, agentIndex + 1, currDepth) for successorState in successorStates])
+            elif agentIndex != gameState.getNumAgents() - 1:
+                return min([minimax(successorState, agentIndex + 1, currDepth) for successorState in successorStates])
             else:
-                for i in range(gameState.getNumAgents()):
-                    if i == 0:
-                        return max([minimax(gameState.generateSuccessor(i, action), currDepth - 1) for action in gameState.getLegalActions(i)])
-                    else:
-                        return min([minimax(gameState.generateSuccessor(i, action), currDepth - 1) for action in gameState.getLegalActions(i)])
+                return min([minimax(successorState, 0, currDepth - 1) for successorState in successorStates])
 
         highestScore = float('-inf')
         bestAction = None
         for action in gameState.getLegalActions(0):
             nextState = gameState.generateSuccessor(0, action)
-            minimaxValue = minimax(nextState, self.depth)
+            minimaxValue = minimax(nextState, 0, self.depth)
             if  minimaxValue > highestScore:
                 bestAction = action
                 highestScore = minimaxValue
