@@ -151,7 +151,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.isLose():
         Returns whether or not the game state is a losing state
         """
-        "*** YOUR CODE HERE ***"
         
         def minimax(gameState, agentIndex, currDepth):
             if gameState.isWin() or gameState.isLose() or currDepth == 0:
@@ -169,7 +168,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         bestAction = None
         for action in gameState.getLegalActions(0):
             nextState = gameState.generateSuccessor(0, action)
-            minimaxValue = minimax(nextState, 0, self.depth)
+            minimaxValue = minimax(nextState, 1, self.depth)
             if  minimaxValue > highestScore:
                 bestAction = action
                 highestScore = minimaxValue
