@@ -92,9 +92,6 @@ class ReflexAgent(Agent):
             return 2
         else:
             return 1 / minDisToFood
-            
-
-        return successorGameState.getScore()
 
 def scoreEvaluationFunction(currentGameState: GameState):
     """
@@ -155,6 +152,33 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
+        
+        def minimax(gameState, currDepth):
+            if gameState.isWin() or gameState.isLose():
+                return self.evaluationFunction(gameState)
+            if currDepth == 0:
+                for i in range(gameState.getNumAgents()):
+                    if i == 0:
+                        return max([self.evaluationFunction(gameState.generateSuccessor(i, action)) for action in gameState.getLegalActions(i)])
+                    else:
+                        return min([self.evaluationFunction(gameState.generateSuccessor(i, action)) for action in gameState.getLegalActions(i)])
+            else:
+                for i in range(gameState.getNumAgents()):
+                    if i == 0:
+                        return max([minimax(gameState.generateSuccessor(i, action), currDepth - 1) for action in gameState.getLegalActions(i)])
+                    else:
+                        return min([minimax(gameState.generateSuccessor(i, action), currDepth - 1) for action in gameState.getLegalActions(i)])
+
+        highestScore = float('-inf')
+        bestAction = None
+        for action in gameState.getLegalActions(0):
+            nextState = gameState.generateSuccessor(0, action)
+            minimaxValue = minimax(nextState, self.depth)
+            if  minimaxValue > highestScore:
+                bestAction = action
+                highestScore = minimaxValue
+        return bestAction
+
         util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
