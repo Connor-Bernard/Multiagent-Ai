@@ -230,25 +230,34 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             if gameState.isWin() or gameState.isLose() or currDepth == 0:
                 return self.evaluationFunction(gameState), None
             agentIndex %= gameState.getNumAgents()
-            minMaxFunc = max if agentIndex == self.index else min
+            # minMaxFunc = max if agentIndex == self.index else random.choices
             if agentIndex == gameState.getNumAgents() - 1:
                 currDepth -= 1
             # Heh... Good luck debugging this shit.
-            return minMaxFunc(
+            if agentIndex == self.index:
+                return max(
                 [
                     (expectMax(
                         gameState.generateSuccessor(agentIndex, move),
                         agentIndex + 1,
                         currDepth,
                     )[0], move)
-                    for move in (
-                        gameState.getLegalActions(agentIndex) if agentIndex == self.index 
-                        else [random.choice(gameState.getLegalActions(agentIndex))]
-                    )
+                    for move in gameState.getLegalActions(agentIndex)         
                 ],
                 key = lambda x: x[0]
-            )
-
+                )
+            else:
+                choices = [
+                    (expectMax(
+                        gameState.generateSuccessor(agentIndex, move),
+                        agentIndex + 1,
+                        currDepth,
+                    )[0], move)
+                    for move in gameState.getLegalActions(agentIndex)         
+                ]
+                randIndex = random.randint(0, len(choices)-1)
+                return choices[randIndex][0], choices[randIndex][1]
+                  
         return expectMax(gameState)[1]
 
 def betterEvaluationFunction(currentGameState: GameState):
