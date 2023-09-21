@@ -19,6 +19,7 @@ import random, util
 from game import Agent
 from pacman import GameState
 
+
 class ReflexAgent(Agent):
     """
     A reflex agent chooses an action at each choice point by examining
@@ -247,7 +248,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 key = lambda x: x[0]
                 )
             else:
-                choices = [
+                actions = [
                     (expectMax(
                         gameState.generateSuccessor(agentIndex, move),
                         agentIndex + 1,
@@ -255,9 +256,8 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                     )[0], move)
                     for move in gameState.getLegalActions(agentIndex)         
                 ]
-                randIndex = random.randint(0, len(choices)-1)
-                return choices[randIndex][0], choices[randIndex][1]
-                  
+                average_val = sum([action[0] for action in actions])/len(actions)
+                return average_val, actions[random.randint(0, len(actions)-1)][1]
         return expectMax(gameState)[1]
 
 def betterEvaluationFunction(currentGameState: GameState):
