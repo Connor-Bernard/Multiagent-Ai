@@ -226,7 +226,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         All ghosts should be modeled as choosing uniformly at random from their
         legal moves.
         """
-        def expectMax(gameState, agentIndex = self.index, currDepth = self.depth):
+        def expectiMax(gameState, agentIndex = self.index, currDepth = self.depth):
             if gameState.isWin() or gameState.isLose() or currDepth == 0:
                 return self.evaluationFunction(gameState), None
             agentIndex %= gameState.getNumAgents()
@@ -236,29 +236,25 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             if agentIndex == self.index:
                 return max(
                 [
-                    (expectMax(
+                    (expectiMax(
                         gameState.generateSuccessor(agentIndex, move),
                         agentIndex + 1,
                         currDepth,
                     )[0], move)
-                    for move in gameState.getLegalActions(agentIndex)         
+                    for move in gameState.getLegalActions(agentIndex)
                 ],
                 key = lambda x: x[0]
                 )
-            else:
-                actions = [
-                    (expectMax(
-                        gameState.generateSuccessor(agentIndex, move),
-                        agentIndex + 1,
-                        currDepth,
-                    )[0], move)
-                    for move in gameState.getLegalActions(agentIndex)         
-                ]
-                return(
-                    sum([action[0] for action in actions]) / len(actions),
-                    actions[random.randint(0, len(actions) - 1)][1]
-                )
-        return expectMax(gameState)[1]
+            actions = [
+                (expectiMax(
+                    gameState.generateSuccessor(agentIndex, move),
+                    agentIndex + 1,
+                    currDepth,
+                )[0], None)
+                for move in gameState.getLegalActions(agentIndex)         
+            ]
+            return(sum([action[0] for action in actions]) / len(actions), None)
+        return expectiMax(gameState)[1]
 
 def betterEvaluationFunction(currentGameState: GameState):
     """
@@ -267,27 +263,29 @@ def betterEvaluationFunction(currentGameState: GameState):
 
     DESCRIPTION: <write something here so we know what you did>
     """
-    newFood = currentGameState.getFood().asList()
-    pacmanPosition = currentGameState.getPacmanPosition()
+    score = currentGameState.getScore()
+    foodList = currentGameState.getFood().asList()
+    pacmanPos = currentGameState.getPacmanPosition()
     ghostStates = currentGameState.getGhostStates()
-    if len(newFood) == 0:
-        return float('inf')
 
-    minDisToFood = min(map(lambda pt: manhattanDistance(pacmanPosition, pt), newFood))
-    minDistToGhost = min(map(lambda pt: manhattanDistance(pacmanPosition, pt), [s.getPosition() for s in ghostStates]))
+    if len(foodList) == 0:
+        return float('inf')
+    minDistToFood = min(map(lambda pt: manhattanDistance(pacmanPos, pt), foodList))
+    minDistToGhost = float('inf')
 
     for gs in ghostStates:
-        distToGhost = manhattanDistance(pacmanPosition, gs.getPosition())
+        distToGhost = manhattanDistance(pacmanPos, gs.getPosition())
+        if distToGhost < minDistToGhost:
+            minDistToGhost = distToGhost
         if gs.scaredTimer and gs.scaredTimer >= distToGhost:
-            return 4 / distToGhost
+            score += 500
+            score -= distToGhost
         
     if minDistToGhost <= 1:
-        return 0
-
-    if len(currentGameState.getFood().asList()) > len(newFood):
-        return 2
-    else:
-        return 1 / minDisToFood
+        score -= 1000
+    score -= 30 * len(foodList)
+    score -= minDistToFood
+    return score
 
 # Abbreviation
 better = betterEvaluationFunction
